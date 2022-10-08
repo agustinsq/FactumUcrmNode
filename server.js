@@ -3,7 +3,7 @@ const express = require("express");
 const axios = require("axios").default;
 
 const app = express();
-const port = process.env.port || git3000;
+const port = process.env.port || 3000;
 var claveFactura = 0;
 var DatosCliente;
 
