@@ -3,7 +3,7 @@ const express = require("express");
 const axios = require("axios").default;
 
 const app = express();
-const port = 3000;
+const port = process.env.port || git3000;
 var claveFactura = 0;
 var DatosCliente;
 
@@ -340,6 +340,7 @@ app.use((error, req, res, next) => {
   next(error);
 });
 
+
 app.listen(port, () =>
-  console.log(`Example app listening at http://localhost:${port}`)
+  console.log(`Listening at http://localhost:${port}`)
 );
