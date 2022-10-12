@@ -191,7 +191,7 @@ console.log(DescuentoEspecifico);
                 tarifa: 13,
                 codigo_tarifa: "08",
                 monto_impuesto: 2957.5,
-              },c
+              },
             ],
             bonificacion: false,
           });
