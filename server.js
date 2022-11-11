@@ -27,7 +27,7 @@ app.post("/github", (req, res) => {
 console.log(
   `Empresa=${req.body.extraData.entity.clientCompanyName}`
 );
-  //Holas YUIEO
+
   //console.log(req.body.extraData.entity.currencyCode);
   //console.log(req.body.extraData.entity.items[0].discountPrice);
   /*
