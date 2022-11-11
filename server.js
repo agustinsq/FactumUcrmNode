@@ -7,30 +7,28 @@ const port = process.env.port || 3000;
 var claveFactura = 0;
 var DatosCliente;
 
-
 app.use(express.json());
 
 app.post("/github", (req, res) => {
   const eventName = req.body.eventName;
   var axios = require("axios");
 
-
-
-
-
-
-var config = {
-  method: "get",
-  url: `https://admin.birdlinkcr.com/crm/api/v1.0/clients/${req.body.extraData.entity.clientId}`,
-  headers: {
-    "Content-Type": "application/json",
-    "X-Auth-App-Key":
-      "4iXSC1duFKEU6FJ86hpOhX/1544MqtwpXDlZUI7A6xvpyeAGFZ/DwrqdcHB4UQ3u",
-    
-  },
-};
-  //console.log(req.body.extraData.entity);
-  console.log(req.body.extraData.entity.items[0].discountPrice);
+  var config = {
+    method: "get",
+    url: `https://admin.birdlinkcr.com/crm/api/v1.0/clients/${req.body.extraData.entity.clientId}`,
+    headers: {
+      "Content-Type": "application/json",
+      "X-Auth-App-Key": process.env.UCRM_KEY,
+    },
+  };
+  console.log(
+    `Cliente=${req.body.extraData.entity.clientFirstName} ${req.body.extraData.entity.clientLastName}`
+  );
+console.log(
+  `Empresa=${req.body.extraData.entity.clientCompanyName}`
+);
+  //console.log(req.body.extraData.entity.currencyCode);
+  //console.log(req.body.extraData.entity.items[0].discountPrice);
   /*
  console.log(req.body.extraData);
   
@@ -40,7 +38,7 @@ var config = {
   ///UCRM RESPONCE
   axios(config)
     .then((UCRMResponse) => {
-      console.log("OK Datos Cliente");
+      console.log("Datos Cliente de UCRM obtenidos correctamente");
       res.status(200).send();
       DatosCliente = UCRMResponse;
       // console.log(DatosCliente.data.attributes[2].value);
@@ -102,15 +100,12 @@ var config = {
         (attribute) => attribute.key == "tipoIdentificaciN"
       );
 
-
       if (
         generarFactura[0].value === "SI" &&
-        req.body.extraData.entity.totalTaxAmount !=0
+        req.body.extraData.entity.totalTaxAmount != 0
       ) {
         //Condicional para generar factura
         /*
-
-
        console.log(DatosCliente.data.attributes[0].value);
         console.log(DatosCliente.data.attributes[1].value);
         console.log(DatosCliente.data.attributes[2].value);
@@ -159,14 +154,13 @@ var config = {
           ///Cuando un plan tiene un plan tiene un descuento se le llama descuneto especifico y se proceso de una forma difernete a un descuneto general que puede aplicar a todos los items en la factura.
 
           if (req.body.extraData.entity.items[i].discountPrice) {
-
-            DescuentoEspecifico = req.body.extraData.entity.items[i].discountPrice;
-          }
-          else {
+            DescuentoEspecifico =
+              req.body.extraData.entity.items[i].discountPrice;
+          } else {
             DescuentoEspecifico = 0;
           }
-          console.log("DescuentoEspecifico =");
-console.log(DescuentoEspecifico);
+          console.log(`Descuento Aplicado = ${DescuentoEspecifico}`);
+
           produServi.push({
             numero_linea: i + 1,
             codigo: "4526300000000",
@@ -191,7 +185,7 @@ console.log(DescuentoEspecifico);
                 tarifa: 13,
                 codigo_tarifa: "08",
                 monto_impuesto: 2957.5,
-              },c
+              },
             ],
             bonificacion: false,
           });
@@ -256,30 +250,29 @@ console.log(DescuentoEspecifico);
               condicion_venta: "02",
               plazo_credito: "15",
               medio_pago: ["04"],
-              detalles: produServi,             ///Aqui se agregan los productos
+              detalles: produServi, ///Aqui se agregan los productos
               resumen_documento: {
-                codigo_moneda: "CRC",
+                codigo_moneda: `${req.body.extraData.entity.currencyCode}`,
                 tipo_cambio: TcambioVenta,
               },
             };
 
-            //console.log(data.detalles);
+            //console.log(data);
 
             ///Envia Factura a Hacienda
             var config = {
               method: "post",
               url: "https://dev.api.factun.com/api/V2/Documento/Enviar",
               headers: {
-                FactunToken: "354_202262714621_699_uJjqz",
+                FactunToken: process.env.FACTUM_TOKEN,
                 "Content-Type": "application/json",
-                Authorization:
-                  "Basic YXBpX3NxdGVzb2x1XzUwNTphcGlfc3F0ZXNvbHVfNTA1QA==",
+                Authorization: process.env.AUTORIZATION,
               },
               data: data,
             };
             axios(config)
               .then((factunResponse) => {
-                console.log("Enviado");
+                console.log("Documento enviado a Factum");
                 /* console.log(factunResponse.data);*/
                 res.status(200).send();
                 claveFactura = factunResponse.data.data.clave;
@@ -298,17 +291,16 @@ console.log(DescuentoEspecifico);
 
                 axios(config)
                   .then((factunResponse) => {
-                    console.log("OKhacienda");
+                    console.log("Respuesta positiva de hacienda");
 
                     res.status(200).send();
                     claveFactura = factunResponse.data.data.clave;
                   })
-                  .catch(
-                    (err) =>
-                      console.error(
-                        `Error al obtener status de Hacienda: ${err}`
-                      )
-                    // console.log(err);
+                  .catch((err) =>
+                    console.error(
+                      `Error al obtener status de Hacienda: ${err}`
+                      //console.log(err)
+                    )
                   );
               })
               .catch((err) => console.error(`Error al enviar Factura: ${err}`));
@@ -320,17 +312,12 @@ console.log(DescuentoEspecifico);
         console.log("Cliente no requiere factura electronica");
       } ///cierra el if
     })
-  .catch((err) => console.error(`Error al obtener datos de cliente: ${err}`));
-
-
+    .catch((err) => console.error(`Error al obtener datos de cliente: ${err}`));
 
   console.log(req.body.extraData.entity.clientId);
   if (DatosCliente !== undefined) {
-   /*  console.log(DatosCliente);*/
-
-  } 
-  
-
+    /*  console.log(DatosCliente);*/
+  }
 });
 
 app.use((error, req, res, next) => {
@@ -340,7 +327,4 @@ app.use((error, req, res, next) => {
   next(error);
 });
 
-
-app.listen(port, () =>
-  console.log(`Listening at http://localhost:${port}`)
-);
+app.listen(port, () => console.log(`Listening at http://localhost:${port}`));
