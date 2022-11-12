@@ -27,7 +27,6 @@ app.post("/github", (req, res) => {
 console.log(
   `Empresa=${req.body.extraData.entity.clientCompanyName}`
 );
-//mss
   //console.log(req.body.extraData.entity.currencyCode);
   //console.log(req.body.extraData.entity.items[0].discountPrice);
   /*
@@ -39,7 +38,7 @@ console.log(
   ///UCRM RESPONCE
   axios(config)
     .then((UCRMResponse) => {
-      console.log("Datos cliente de UCRM obtenidos correctamente");
+      console.log("Datos Cliente de UCRM obtenidos correctamente");
       res.status(200).send();
       DatosCliente = UCRMResponse;
       // console.log(DatosCliente.data.attributes[2].value);
@@ -56,7 +55,6 @@ console.log(
       if (generarFactura.length === 0) {
         generarFactura = [{ value: "NO" }];
       }
-      
 
       const Correo = DatosCliente.data.attributes.filter(
         (attribute) => attribute.key == "correoFacturaElectrNica"
